@@ -2,3 +2,4 @@
 /node_modules
 .env
 /db-data
+/public/style.css

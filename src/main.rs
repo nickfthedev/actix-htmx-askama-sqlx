@@ -1,7 +1,7 @@
 pub mod handler;
 
-
 use actix_web::{web, App, HttpServer, middleware::Logger};
+use actix_files::Files;
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use std::env;
 use dotenv;
@@ -38,6 +38,7 @@ async fn main() -> std::io::Result<()> {
             pool: pool.clone(),
             app_name:String::from("Test App")
         }))
+        .service(Files::new("/public", "./public/").index_file("404.html"))
         .service(greet) // Greet Function
         .service(index)
         .service(addtodotest)

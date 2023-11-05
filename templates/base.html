@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>{% block title %} -  Todo {% endblock %}</title>
+  {% block head %}
+  <!-- Can be used for custom styles -->
+  <style></style>
+  <!-- Tailwind CSS File, build with cmd: npm run css:build -->
+  <link href="public/style.css" rel="stylesheet">
+  <!-- Include HTMX -->
+  <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+  {% endblock %}
+</head>
+
+<body>
+  <div class="flex flex-col h-screen justify-between">
+    <header class="">
+      <div class="navbar bg-base-200">
+        <a class="btn btn-ghost normal-case text-xl">Todo App</a>
+      </div>
+    </header>
+    <main class="mb-auto flex justify-center mt-4 mx-2">
+        {% block content %}<p>Placeholder content (Can be rendered by the use of super in Child template)</p>{% endblock %}
+    </main>
+    <footer class="footer footer-center p-4 bg-base-300 text-base-content">
+        <aside>
+          <p>Copyright © 2023 - All right reserved by ACME Industries Ltd</p>
+        </aside>
+    </footer>
+    </div>
+</body>
+</html>
