@@ -7,8 +7,10 @@ use std::env;
 use dotenv;
 use pretty_env_logger;
 
-use crate::handler::{greet,index,not_found};
-use handler::{addtodotest, askamatest};
+use handler::common::not_found;
+use handler::{health, greet,askamatest};
+use handler::todo::{addtodotest, show_todo, get_todo, add_todo, update_todo, delete_todo};
+
 
 struct AppState {
     pool: Pool<Postgres>,
@@ -40,9 +42,16 @@ async fn main() -> std::io::Result<()> {
         }))
         .service(Files::new("/public", "./public/").index_file("404.html"))
         .service(greet) // Greet Function
-        .service(index)
+        .service(health)
         .service(addtodotest)
         .service(askamatest) 
+        //To-Do Handler
+        .service(show_todo)
+        .service(get_todo)
+        .service(add_todo)
+        .service(update_todo)
+        .service(delete_todo)
+        // 404 handler
         .default_service( // Custom 404
             web::route().to(not_found)
         )
