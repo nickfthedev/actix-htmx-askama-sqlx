@@ -8,7 +8,7 @@ use dotenv;
 use pretty_env_logger;
 
 use crate::handler::{greet,index,not_found};
-use handler::addtodotest;
+use handler::{addtodotest, askamatest};
 
 struct AppState {
     pool: Pool<Postgres>,
@@ -40,7 +40,8 @@ async fn main() -> std::io::Result<()> {
         }))
         .service(greet) // Greet Function
         .service(index)
-        .service(addtodotest) 
+        .service(addtodotest)
+        .service(askamatest) 
         .default_service( // Custom 404
             web::route().to(not_found)
         )

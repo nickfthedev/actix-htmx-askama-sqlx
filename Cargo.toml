@@ -11,3 +11,5 @@ sqlx = { version = "0.7", features = [ "runtime-tokio", "tls-native-tls", "postg
 serde = { version = "1", features = ["derive"] }
 pretty_env_logger = "0.4"
 dotenv = "0.15.0"
+askama = "0.12.1"
+askama_actix = "0.14.0"
