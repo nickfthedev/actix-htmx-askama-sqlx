@@ -65,14 +65,14 @@ async fn add_todo(data: web::Data<AppState>, web::Form(form): web::Form<AddTodo>
         TodoList { todo: items }.to_response()
 }
 
-#[patch("/todo")]
-async fn update_todo() -> impl Responder {
-    "Hello world!"
+#[patch("/todo/{id}")]
+async fn update_todo(id: web::Path<String>) -> impl Responder {
+    format!("Update {id}!")
 }
 
-#[delete("/todo")]
-async fn delete_todo() -> impl Responder {
-    "Hello world!"
+#[delete("/todo/{id}")]
+async fn delete_todo(id: web::Path<String>) -> impl Responder {
+    format!("Delete {id}!")
 }
 
 // Sample which writes a task to DB 
