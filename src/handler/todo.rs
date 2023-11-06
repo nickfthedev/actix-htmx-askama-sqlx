@@ -1,4 +1,4 @@
-use actix_web::{get, post, patch, delete, web ,Responder};
+use actix_web::{get, post, patch, delete, web ,Responder, HttpResponse};
 use askama_actix::{Template, TemplateToResponse};
 use serde::Deserialize;
 use crate::AppState;
@@ -77,10 +77,15 @@ async fn update_todo(id: web::Path<String>,
     web::Form(form): web::Form<UpdateTodo>,
     data: web::Data<AppState>,
     ) -> impl Responder {
-    let id_int = id.parse::<i32>().unwrap(); 
-    let qry = sqlx::query!("UPDATE todo SET task=($1),completed=($2) WHERE id=($3)", form.task, form.completed, id_int);
+    // Attempt to parse the `id` string into an i32 integer.
+    let id_int = match id.parse::<i32>() {
+        Ok(parsed_id) => parsed_id,
+        Err(_) => return HttpResponse::BadRequest().body("Invalid ID"),
+    };
 
+    let qry = sqlx::query!("UPDATE todo SET task=($1),completed=($2) WHERE id=($3)", form.task, form.completed, id_int);
     qry.execute(&data.pool).await.unwrap();
+
     let items = sqlx::query_as::<_, (String, bool)>("SELECT task, completed FROM todo ORDER BY id")
         .fetch_all(&data.pool)
         .await
@@ -92,8 +97,23 @@ async fn update_todo(id: web::Path<String>,
 }
 
 #[delete("/todo/{id}")]
-async fn delete_todo(id: web::Path<String>) -> impl Responder {
-    format!("Delete {id}!")
+async fn delete_todo(id: web::Path<String>, data: web::Data<AppState>) -> impl Responder {
+    // Attempt to parse the `id` string into an i32 integer.
+    let id_int = match id.parse::<i32>() {
+        Ok(parsed_id) => parsed_id,
+        Err(_) => return HttpResponse::BadRequest().body("Invalid ID"),
+    };
+
+    let qry = sqlx::query!("DELETE FROM todo WHERE id=($1)", id_int);
+    qry.execute(&data.pool).await.unwrap();
+
+    let items = sqlx::query_as::<_, (String, bool)>("SELECT task, completed FROM todo ORDER BY id")
+        .fetch_all(&data.pool)
+        .await
+        .unwrap();
+
+    let items: Vec<TodoItem> = items.iter().map(|(task, completed)| TodoItem { task, completed: *completed }).collect();
+    TodoList { todo: items }.to_response()
 }
 
 // Sample which writes a task to DB 
