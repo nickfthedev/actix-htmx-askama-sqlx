@@ -1,6 +1,6 @@
 use actix_web::{get, post, patch, delete, web ,Responder};
 use askama_actix::{Template, TemplateToResponse};
-
+use serde::Deserialize;
 use crate::AppState;
 
 ///
@@ -34,13 +34,35 @@ async fn show_todo(data: web::Data<AppState>) -> impl Responder {
 }
 
 #[get("/todo")]
-async fn get_todo() -> impl Responder {
-    "Hello world!"
+async fn get_todo(data: web::Data<AppState>) -> impl Responder {
+    let items = sqlx::query_as::<_, (String, bool)>("SELECT task, completed FROM todo ORDER BY id")
+        .fetch_all(&data.pool)
+        .await
+        .unwrap();
+
+        let items: Vec<TodoItem> = items.iter().map(|(task, completed)| TodoItem { task, completed: *completed }).collect();
+        TodoList { todo: items }.to_response()
+}
+
+
+#[allow(dead_code)]
+#[derive(Deserialize)]
+struct AddTodo {
+    task: String,
 }
 
 #[post("/todo")]
-async fn add_todo() -> impl Responder {
-    "Hello world!"
+async fn add_todo(data: web::Data<AppState>, web::Form(form): web::Form<AddTodo>) -> impl Responder {
+    let new_task = form.task;
+    let add_query = sqlx::query!("INSERT INTO todo (task) VALUES ($1)", new_task);
+    add_query.execute(&data.pool).await.unwrap();
+    let items = sqlx::query_as::<_, (String, bool)>("SELECT task, completed FROM todo ORDER BY id")
+        .fetch_all(&data.pool)
+        .await
+        .unwrap();
+
+        let items: Vec<TodoItem> = items.iter().map(|(task, completed)| TodoItem { task, completed: *completed }).collect();
+        TodoList { todo: items }.to_response()
 }
 
 #[patch("/todo")]

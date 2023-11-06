@@ -31,7 +31,7 @@ async fn main() -> std::io::Result<()> {
     .unwrap();
     // Run Migrations
     sqlx::migrate!().run(&pool).await.unwrap();
-
+    
     // Start Server
     HttpServer::new(move || {
         App::new()
