@@ -1,4 +1,7 @@
-## Actix-Askama-Template
+## Actix-Askama-HTMX-SQLX-Template
+
+###A implemented To-Do-List using the Techstack above
+![image](https://github.com/nickfthedev/actix-htmx-askama-sqlx/assets/24594991/3956c8a6-a68d-4854-8dad-2009100ff91c)
 
 ### Tailwind make CSS
 Watching changes
