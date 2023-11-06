@@ -1,4 +1,4 @@
-use actix_web::{get, post, patch, delete, web ,Responder, HttpResponse};
+use actix_web::{get, post, patch, put, delete, web ,Responder, HttpResponse};
 use askama_actix::{Template, TemplateToResponse};
 use serde::Deserialize;
 use crate::AppState;
@@ -20,6 +20,7 @@ pub struct TodoList<'a> {
 }
 
 pub struct TodoItem<'a> {
+    id: &'a i32,
     task: &'a str,
     completed: bool,
 }
@@ -52,12 +53,12 @@ async fn show_todo()-> impl Responder {
 
 #[get("/todo")]
 async fn get_todo(data: web::Data<AppState>) -> impl Responder {
-    let items = sqlx::query_as::<_, (String, bool)>("SELECT task, completed FROM todo ORDER BY id")
+    let items = sqlx::query_as::<_, (i32, String, bool)>("SELECT id, task, completed FROM todo ORDER BY id")
         .fetch_all(&data.pool)
         .await
         .unwrap();
 
-        let items: Vec<TodoItem> = items.iter().map(|(task, completed)| TodoItem { task, completed: *completed }).collect();
+        let items: Vec<TodoItem> = items.iter().map(|(id, task, completed)| TodoItem { id, task, completed: *completed }).collect();
         TodoList { todo: items }.to_response()
 }
 
@@ -68,14 +69,30 @@ async fn add_todo(data: web::Data<AppState>, web::Form(form): web::Form<AddTodo>
     }
     let add_query = sqlx::query!("INSERT INTO todo (task) VALUES ($1)", form.task);
     add_query.execute(&data.pool).await.unwrap();
-    let items = sqlx::query_as::<_, (String, bool)>("SELECT task, completed FROM todo ORDER BY id")
+
+    let items = sqlx::query_as::<_, (i32, String, bool)>("SELECT id, task, completed FROM todo ORDER BY id")
         .fetch_all(&data.pool)
         .await
         .unwrap();
 
-        let items: Vec<TodoItem> = items.iter().map(|(task, completed)| TodoItem { task, completed: *completed }).collect();
+        let items: Vec<TodoItem> = items.iter().map(|(id, task, completed)| TodoItem { id, task, completed: *completed }).collect();
         TodoList { todo: items }.to_response()
 }
+
+#[put("/todo/{id}")]
+async fn toggle_completed(id: web::Path<String>, 
+    data: web::Data<AppState>) -> impl Responder {
+    // Attempt to parse the `id` string into an i32 integer.
+    let id_int = match id.parse::<i32>() {
+        Ok(parsed_id) => parsed_id,
+        Err(_) => return HttpResponse::BadRequest().body("Invalid ID"),
+    };
+        
+    let qry = sqlx::query!("UPDATE todo SET completed = NOT completed WHERE id=($1)", id_int);
+    qry.execute(&data.pool).await.unwrap();
+    // Append header to show success message on website
+    return HttpResponse::Accepted().append_header(("hx-trigger", "taskUpdated")).body("Ok");
+    }
 
 #[patch("/todo/{id}")]
 async fn update_todo(id: web::Path<String>,
@@ -94,14 +111,13 @@ async fn update_todo(id: web::Path<String>,
     let qry = sqlx::query!("UPDATE todo SET task=($1),completed=($2) WHERE id=($3)", form.task, form.completed, id_int);
     qry.execute(&data.pool).await.unwrap();
 
-    let items = sqlx::query_as::<_, (String, bool)>("SELECT task, completed FROM todo ORDER BY id")
+    let items = sqlx::query_as::<_, (i32, String, bool)>("SELECT id, task, completed FROM todo ORDER BY id")
         .fetch_all(&data.pool)
         .await
         .unwrap();
 
-        let items: Vec<TodoItem> = items.iter().map(|(task, completed)| TodoItem { task, completed: *completed }).collect();
+        let items: Vec<TodoItem> = items.iter().map(|(id, task, completed)| TodoItem { id, task, completed: *completed }).collect();
         TodoList { todo: items }.to_response()
-        //format!("Update {id}!")
 }
 
 #[delete("/todo/{id}")]
@@ -115,27 +131,11 @@ async fn delete_todo(id: web::Path<String>, data: web::Data<AppState>) -> impl R
     let qry = sqlx::query!("DELETE FROM todo WHERE id=($1)", id_int);
     qry.execute(&data.pool).await.unwrap();
 
-    let items = sqlx::query_as::<_, (String, bool)>("SELECT task, completed FROM todo ORDER BY id")
+    let items = sqlx::query_as::<_, (i32, String, bool)>("SELECT id, task, completed FROM todo ORDER BY id")
         .fetch_all(&data.pool)
         .await
         .unwrap();
 
-    let items: Vec<TodoItem> = items.iter().map(|(task, completed)| TodoItem { task, completed: *completed }).collect();
-    TodoList { todo: items }.to_response()
-}
-
-// Sample which writes a task to DB 
-#[get("/addtodo")]
-async fn addtodotest(data: web::Data<AppState>) -> impl Responder {
-
-    sqlx::query("
-        INSERT INTO todo (task, completed)
-        VALUES ('Sample todo', false)
-    ")
-    .execute(&data.pool)
-    .await
-    .unwrap();
-
-    let app_name = &data.app_name; // <- get app_name
-    format!("Hello {app_name}! Todo added") // <- response with app_name
+        let items: Vec<TodoItem> = items.iter().map(|(id, task, completed)| TodoItem { id, task, completed: *completed }).collect();
+        TodoList { todo: items }.to_response()
 }

@@ -1,19 +1,41 @@
 {% extends "base.html" %}
 
 {% block title %}
-Hello
+To-Do List
 {% call super() %}
 {% endblock %}
 
 {% block head %}
   <style>
   </style>
-   {% call super() %}
+{% call super() %}
 {% endblock %}
 
 {% block content %}
-  <div id="todo" hx-get="/todo" hx-trigger="load" hx-target="#todo">
+<!-- Event listener for toasts-->
+<script>
+document.body.addEventListener("taskUpdated", function(evt){
+  var toastElement = document.getElementById("taskUpdatedToast");
+  toastElement.classList.remove("invisible");
+  setTimeout(function() {
+    toastElement.classList.add("invisible");
+  }, 2000); // 2000 milliseconds (2 seconds)
+})
+</script>
+<!-- toasts -->
+<div id="taskUpdatedToast" class="toast toast-top toast-center invisible">
+  <div class="alert alert-info">
+    <span>Task updated.</span>
   </div>
+  <div class="alert alert-success invisible">
+    <span>Message sent successfully.</span>
+  </div>
+</div>
+
+
+<!-- actual todo list -->
+<div id="todo" hx-get="/todo" hx-trigger="load" hx-target="#todo">
+</div>
 
 {% endblock %}
 

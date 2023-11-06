@@ -1,20 +1,32 @@
+
   <div id="todolist">
-    <h1 class="text-2xl">To-Do List</h1>
+    <h1 class="text-2xl mb-4">To-Do List</h1>
      
-    <ul>
-      {% for item in todo %}
-      <li>{{ item.completed }} | {{ item.task }}</li>
-      {% endfor %}
-      <li>To-Do List Item</li>
-    </ul>
     <form
       hx-post="/todo"
       hx-target="#todolist">
-    <div class="flex flex-row">
-      <input type="text" name="task" placeholder="Type here" class="input w-full max-w-xs" />
+    <div class="flex flex-row mx-4">
+      <input type="text" name="task" placeholder="Type here" class="input input-bordered mx-2 w-full max-w-xs" />
       <button class="btn btn-primary">Add</button>
     </div>
     </form> 
+    <ul class="min-w-full mt-4">
+      {% for item in todo %}
+      <li class="bg-base-200 m-1 p-2 flex flex-row align-middle rounded-lg">
+        <span class="justify-start mr-auto flex flex-row align-middle mt-1">
+          <input type="checkbox" hx-put="todo/{{item.id}}" hx-swap="none" 
+            {%if item.completed %}checked="checked"{% endif %} 
+            class="checkbox mx-2" />
+            {{ item.task }}
+        </span>
+        
+        <span class="justify-end">
+          <button class="btn btn-sm btn-ghost">Edit</button>
+          <button class="btn btn-sm btn-ghost">Delete</button>
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
   </div>
 
 
