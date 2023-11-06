@@ -9,7 +9,7 @@ use pretty_env_logger;
 
 use handler::common::not_found;
 use handler::{health, greet,askamatest};
-use handler::todo::{ show_todo, get_todo, add_todo, update_todo, delete_todo, toggle_completed};
+use handler::todo::{ show_todo, get_todo, add_todo, update_todo, delete_todo, toggle_completed, render_update_todo};
 
 
 struct AppState {
@@ -49,6 +49,7 @@ async fn main() -> std::io::Result<()> {
         .service(get_todo)
         .service(add_todo)
         .service(update_todo)
+        .service(render_update_todo)
         .service(delete_todo)
         .service(toggle_completed)
         // 404 handler

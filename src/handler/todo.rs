@@ -18,13 +18,22 @@ pub struct TodoList<'a> {
     #[template(escape = "none")]
     todo: Vec<TodoItem<'a>>,
 }
-
+//Helper for Template above
 pub struct TodoItem<'a> {
     id: &'a i32,
     task: &'a str,
     completed: bool,
 }
 
+
+#[allow(dead_code)]
+#[derive(Template)]
+#[template(path = "todo_list_item_edit.html")]
+pub struct TodoListItemEdit<'a> {
+    id: &'a i32,
+    task: &'a str,
+    completed: &'a bool,
+}
 ///
 /// Structs
 ///
@@ -38,6 +47,7 @@ struct AddTodo {
 #[allow(dead_code)]
 #[derive(Deserialize)]
 struct UpdateTodo {
+    id: i32,
     task: String,
     completed: bool, 
 }
@@ -93,7 +103,12 @@ async fn toggle_completed(id: web::Path<String>,
     // Append header to show success message on website
     return HttpResponse::Accepted().append_header(("hx-trigger", "taskUpdated")).body("Ok");
     }
-
+// Renders the Update <li> item instead of the normal one
+#[patch("/todo/edit/{id}")]
+async fn render_update_todo(id: web::Path<i32>, web::Form(form): web::Form<UpdateTodo>) -> impl Responder {
+    TodoListItemEdit { id: &id, task: &form.task, completed: &form.completed }.to_response()
+}
+// Updates the Todolist Item
 #[patch("/todo/{id}")]
 async fn update_todo(id: web::Path<String>,
     web::Form(form): web::Form<UpdateTodo>,

@@ -1,0 +1,20 @@
+
+      <li class="bg-base-200 m-1 p-2 flex flex-row align-middle rounded-lg">
+        <span class="justify-start mr-auto flex flex-row align-middle mt-1">
+          <input type="checkbox"
+            {%if completed %}checked="checked"{% endif %} 
+            class="checkbox mx-2" />
+            {{ task }}
+        </span>
+        
+        <span class="justify-end">
+          <form class="inline-block">
+          <button class="btn btn-sm btn-success" 
+              hx-patch="/todo/{{id}}" 
+              hx-target="closest li"
+              >
+            Save</button>
+          </form>
+          <button class="btn btn-sm btn-ghost" hx-delete="/todo/{{id}}" hx-confirm="Are you sure?">Delete</button>
+        </span>
+      </li>

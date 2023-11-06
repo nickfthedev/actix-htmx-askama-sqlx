@@ -21,8 +21,18 @@
         </span>
         
         <span class="justify-end">
-          <button class="btn btn-sm btn-ghost">Edit</button>
-          <button class="btn btn-sm btn-ghost">Delete</button>
+          <form class="inline-block">
+          <input type="hidden" name="task" value="{{item.task}}" />
+          <input type="hidden" name="completed" value="{{item.completed}}" />
+          <input type="hidden" name="id" value="{{item.id}}" />  
+          <button class="btn btn-sm btn-ghost" 
+              hx-patch="/todo/edit/{{item.id}}" 
+              hx-target="closest li"
+              hx-swap="outerHTML"
+              >
+            Edit</button>
+          </form>
+          <button class="btn btn-sm btn-ghost" hx-delete="/todo/{{item.id}}" hx-confirm="Are you sure?">Delete</button>
         </span>
       </li>
       {% endfor %}
