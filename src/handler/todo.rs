@@ -2,6 +2,7 @@ use actix_web::{get, post, patch, put, delete, web ,Responder, HttpResponse};
 use askama_actix::{Template, TemplateToResponse};
 use serde::Deserialize;
 use crate::AppState;
+use tracing::info;
 
 ///
 /// Template Structs
@@ -49,7 +50,14 @@ struct AddTodo {
 struct UpdateTodo {
     id: i32,
     task: String,
-    completed: bool, 
+    completed: Option<bool>, 
+}
+
+impl UpdateTodo {
+    // A function that converts `completed` to a `bool` with a default value of `false`.
+    fn get_completed(&self) -> bool {
+        self.completed.unwrap_or(false)
+    }
 }
 
 ///
@@ -106,7 +114,7 @@ async fn toggle_completed(id: web::Path<String>,
 // Renders the Update <li> item instead of the normal one
 #[patch("/todo/edit/{id}")]
 async fn render_update_todo(id: web::Path<i32>, web::Form(form): web::Form<UpdateTodo>) -> impl Responder {
-    TodoListItemEdit { id: &id, task: &form.task, completed: &form.completed }.to_response()
+    TodoListItemEdit { id: &id, task: &form.task, completed: &form.get_completed() }.to_response()
 }
 // Updates the Todolist Item
 #[patch("/todo/{id}")]
@@ -114,16 +122,17 @@ async fn update_todo(id: web::Path<String>,
     web::Form(form): web::Form<UpdateTodo>,
     data: web::Data<AppState>,
     ) -> impl Responder {
+
+    info!("Completed: {}", form.get_completed());
     // Attempt to parse the `id` string into an i32 integer.
     let id_int = match id.parse::<i32>() {
         Ok(parsed_id) => parsed_id,
         Err(_) => return HttpResponse::BadRequest().body("Invalid ID"),
     };
-
     if form.task == "" {
         return HttpResponse::BadRequest().body("Empty task")
     }
-    let qry = sqlx::query!("UPDATE todo SET task=($1),completed=($2) WHERE id=($3)", form.task, form.completed, id_int);
+    let qry = sqlx::query!("UPDATE todo SET task=($1),completed=($2) WHERE id=($3)", form.task, form.get_completed(), id_int);
     qry.execute(&data.pool).await.unwrap();
 
     let items = sqlx::query_as::<_, (i32, String, bool)>("SELECT id, task, completed FROM todo ORDER BY id")

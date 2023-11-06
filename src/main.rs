@@ -5,7 +5,8 @@ use actix_files::Files;
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use std::env;
 use dotenv;
-use pretty_env_logger;
+use tracing::info;
+use tracing_subscriber;
 
 use handler::common::not_found;
 use handler::{health, greet,askamatest};
@@ -20,7 +21,8 @@ struct AppState {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     //Logger
-    pretty_env_logger::init();
+    tracing_subscriber::fmt::init();
+    info!("Starting Server..");
     // Env
     dotenv::dotenv().ok();
     // Init DB
