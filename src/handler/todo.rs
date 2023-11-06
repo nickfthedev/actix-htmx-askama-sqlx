@@ -51,6 +51,13 @@ struct AddTodo {
     task: String,
 }
 
+
+#[allow(dead_code)]
+#[derive(Deserialize)]
+struct UpdateTodo {
+    task: String,
+    completed: bool, 
+}
 #[post("/todo")]
 async fn add_todo(data: web::Data<AppState>, web::Form(form): web::Form<AddTodo>) -> impl Responder {
     let new_task = form.task;
@@ -66,8 +73,22 @@ async fn add_todo(data: web::Data<AppState>, web::Form(form): web::Form<AddTodo>
 }
 
 #[patch("/todo/{id}")]
-async fn update_todo(id: web::Path<String>) -> impl Responder {
-    format!("Update {id}!")
+async fn update_todo(id: web::Path<String>,
+    web::Form(form): web::Form<UpdateTodo>,
+    data: web::Data<AppState>,
+    ) -> impl Responder {
+    let id_int = id.parse::<i32>().unwrap(); 
+    let qry = sqlx::query!("UPDATE todo SET task=($1),completed=($2) WHERE id=($3)", form.task, form.completed, id_int);
+
+    qry.execute(&data.pool).await.unwrap();
+    let items = sqlx::query_as::<_, (String, bool)>("SELECT task, completed FROM todo ORDER BY id")
+        .fetch_all(&data.pool)
+        .await
+        .unwrap();
+
+        let items: Vec<TodoItem> = items.iter().map(|(task, completed)| TodoItem { task, completed: *completed }).collect();
+        TodoList { todo: items }.to_response()
+        //format!("Update {id}!")
 }
 
 #[delete("/todo/{id}")]
