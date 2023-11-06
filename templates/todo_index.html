@@ -12,14 +12,7 @@ Hello
 {% endblock %}
 
 {% block content %}
-  <div>
-    <h1 class="text-2xl">To-Do List</h1>
-    <ul>
-      {% for item in todo %}
-      <li>{{ item.completed }} | {{ item.task }}</li>
-      {% endfor %}
-      <li>To-Do List Item</li>
-    </ul>
+  <div id="todo" hx-get="/todo" hx-trigger="load" hx-target="#todo">
   </div>
 
 {% endblock %}

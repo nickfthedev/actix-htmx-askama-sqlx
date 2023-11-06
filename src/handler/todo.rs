@@ -9,6 +9,11 @@ use crate::AppState;
 #[allow(dead_code)]
 #[derive(Template)]
 #[template(path = "todo_index.html")]
+pub struct TodoIndex<> {}
+
+#[allow(dead_code)]
+#[derive(Template)]
+#[template(path = "todo_list.html")]
 pub struct TodoList<'a> {
     #[template(escape = "none")]
     todo: Vec<TodoItem<'a>>,
@@ -18,33 +23,10 @@ pub struct TodoItem<'a> {
     task: &'a str,
     completed: bool,
 }
+
 ///
-/// Handler functions
-/// 
-
-#[get("/")]
-async fn show_todo(data: web::Data<AppState>) -> impl Responder {
-    let items = sqlx::query_as::<_, (String, bool)>("SELECT task, completed FROM todo ORDER BY id")
-        .fetch_all(&data.pool)
-        .await
-        .unwrap();
-
-        let items: Vec<TodoItem> = items.iter().map(|(task, completed)| TodoItem { task, completed: *completed }).collect();
-        TodoList { todo: items }.to_response()
-}
-
-#[get("/todo")]
-async fn get_todo(data: web::Data<AppState>) -> impl Responder {
-    let items = sqlx::query_as::<_, (String, bool)>("SELECT task, completed FROM todo ORDER BY id")
-        .fetch_all(&data.pool)
-        .await
-        .unwrap();
-
-        let items: Vec<TodoItem> = items.iter().map(|(task, completed)| TodoItem { task, completed: *completed }).collect();
-        TodoList { todo: items }.to_response()
-}
-
-
+/// Structs
+///
 #[allow(dead_code)]
 #[derive(Deserialize)]
 struct AddTodo {
@@ -58,10 +40,33 @@ struct UpdateTodo {
     task: String,
     completed: bool, 
 }
+
+///
+/// Handler functions
+/// 
+
+#[get("/")]
+async fn show_todo()-> impl Responder {
+        TodoIndex{}.to_response()
+}
+
+#[get("/todo")]
+async fn get_todo(data: web::Data<AppState>) -> impl Responder {
+    let items = sqlx::query_as::<_, (String, bool)>("SELECT task, completed FROM todo ORDER BY id")
+        .fetch_all(&data.pool)
+        .await
+        .unwrap();
+
+        let items: Vec<TodoItem> = items.iter().map(|(task, completed)| TodoItem { task, completed: *completed }).collect();
+        TodoList { todo: items }.to_response()
+}
+
 #[post("/todo")]
 async fn add_todo(data: web::Data<AppState>, web::Form(form): web::Form<AddTodo>) -> impl Responder {
-    let new_task = form.task;
-    let add_query = sqlx::query!("INSERT INTO todo (task) VALUES ($1)", new_task);
+    if form.task == "" {
+        return HttpResponse::BadRequest().body("Empty task")
+    }
+    let add_query = sqlx::query!("INSERT INTO todo (task) VALUES ($1)", form.task);
     add_query.execute(&data.pool).await.unwrap();
     let items = sqlx::query_as::<_, (String, bool)>("SELECT task, completed FROM todo ORDER BY id")
         .fetch_all(&data.pool)
@@ -83,6 +88,9 @@ async fn update_todo(id: web::Path<String>,
         Err(_) => return HttpResponse::BadRequest().body("Invalid ID"),
     };
 
+    if form.task == "" {
+        return HttpResponse::BadRequest().body("Empty task")
+    }
     let qry = sqlx::query!("UPDATE todo SET task=($1),completed=($2) WHERE id=($3)", form.task, form.completed, id_int);
     qry.execute(&data.pool).await.unwrap();
 
