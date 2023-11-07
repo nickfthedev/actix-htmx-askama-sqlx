@@ -1,4 +1,6 @@
 pub mod handler;
+pub mod model;
+pub mod view;
 
 use actix_web::{web, App, HttpServer, middleware::Logger};
 use actix_files::Files;
@@ -12,7 +14,7 @@ use handler::common::not_found;
 use handler::{health, greet,askamatest};
 use handler::todo::{ show_todo, get_todo, add_todo, update_todo, delete_todo, toggle_completed, render_update_todo};
 
-
+#[derive(Clone)]
 struct AppState {
     pool: Pool<Postgres>,
     app_name: String,
@@ -33,15 +35,17 @@ async fn main() -> std::io::Result<()> {
     .unwrap();
     // Run Migrations
     sqlx::migrate!().run(&pool).await.unwrap();
-    
+    //
+    let app_state = AppState {
+        pool: pool.clone(),
+        app_name: String::from("Sample Todo App")
+    };
+    info!("🚀 {} --> Server lifting off!", app_state.app_name);
     // Start Server
     HttpServer::new(move || {
         App::new()
         .wrap(Logger::default())
-        .app_data(web::Data::new(AppState{
-            pool: pool.clone(),
-            app_name:String::from("Test App")
-        }))
+        .app_data(app_state.clone())
         .service(Files::new("/public", "./public/").index_file("404.html"))
         .service(greet) // Greet Function
         .service(health)

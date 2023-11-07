@@ -1,64 +1,13 @@
 use actix_web::{get, post, patch, put, delete, web ,Responder, HttpResponse};
-use askama_actix::{Template, TemplateToResponse};
-use serde::Deserialize;
 use crate::AppState;
 use tracing::info;
 
-///
-/// Template Structs
-/// 
-#[allow(dead_code)]
-#[derive(Template)]
-#[template(path = "todo_index.html")]
-pub struct TodoIndex<> {}
+use askama_actix::TemplateToResponse;
 
-#[allow(dead_code)]
-#[derive(Template)]
-#[template(path = "todo_list.html")]
-pub struct TodoList<'a> {
-    #[template(escape = "none")]
-    todo: Vec<TodoItem<'a>>,
-}
-//Helper for Template above
-pub struct TodoItem<'a> {
-    id: &'a i32,
-    task: &'a str,
-    completed: bool,
-}
+use crate::view::todo::{TodoIndex, TodoList,TodoListItemEdit};
+use crate::model::todo::{TodoItem, AddTodo, UpdateTodo};
 
 
-#[allow(dead_code)]
-#[derive(Template)]
-#[template(path = "todo_list_item_edit.html")]
-pub struct TodoListItemEdit<'a> {
-    id: &'a i32,
-    task: &'a str,
-    completed: &'a bool,
-}
-///
-/// Structs
-///
-#[allow(dead_code)]
-#[derive(Deserialize)]
-struct AddTodo {
-    task: String,
-}
-
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-struct UpdateTodo {
-    id: i32,
-    task: String,
-    completed: Option<bool>, 
-}
-
-impl UpdateTodo {
-    // A function that converts `completed` to a `bool` with a default value of `false`.
-    fn get_completed(&self) -> bool {
-        self.completed.unwrap_or(false)
-    }
-}
 
 ///
 /// Handler functions
