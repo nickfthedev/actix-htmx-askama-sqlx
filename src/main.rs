@@ -27,6 +27,7 @@ async fn main() -> std::io::Result<()> {
     info!("Starting Server..");
     // Env
     dotenv::dotenv().ok();
+
     // Init DB
     let pool = PgPoolOptions::new()
     .max_connections(5)
@@ -45,7 +46,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
         .wrap(Logger::default())
-        .app_data(app_state.clone())
+        .app_data(web::Data::new(app_state.clone()))
         .service(Files::new("/public", "./public/").index_file("404.html"))
         .service(greet) // Greet Function
         .service(health)
