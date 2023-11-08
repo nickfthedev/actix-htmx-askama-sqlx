@@ -18,13 +18,14 @@ use handler::todo::{ show_todo, get_todo, add_todo, update_todo, delete_todo, to
 struct AppState {
     pool: Pool<Postgres>,
     app_name: String,
+    ip_address: String,
+    port: i32,
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     //Logger
     tracing_subscriber::fmt::init();
-    info!("Starting Server..");
     // Env
     dotenv::dotenv().ok();
 
@@ -39,9 +40,12 @@ async fn main() -> std::io::Result<()> {
     //
     let app_state = AppState {
         pool: pool.clone(),
-        app_name: String::from("Sample Todo App")
+        app_name: String::from("Sample Todo App"),
+        ip_address: String::from("127.0.0.1"),
+        port: 8080
     };
     info!("🚀 {} --> Server lifting off!", app_state.app_name);
+    info!("Listening on http://{}:{}", app_state.ip_address, app_state.port);
     // Start Server
     HttpServer::new(move || {
         App::new()

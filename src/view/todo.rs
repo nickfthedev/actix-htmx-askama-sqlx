@@ -1,16 +1,14 @@
-
 use askama_actix::Template;
 
 use crate::model::todo::TodoItem;
 ///
 /// Template Structs
-/// 
+///
 
 #[allow(dead_code)]
 #[derive(Template)]
 #[template(path = "todo_index.html")]
-pub struct TodoIndex<> {}
-
+pub struct TodoIndex {}
 
 #[allow(dead_code)]
 #[derive(Template)]
