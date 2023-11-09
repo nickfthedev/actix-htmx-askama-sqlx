@@ -1,4 +1,5 @@
 use crate::AppState;
+use actix_web::http::header::{HeaderName, HeaderValue};
 use actix_web::{delete, get, patch, post, put, web, HttpResponse, Responder};
 use serde_json::json;
 use sqlx::{Pool, Postgres};
@@ -8,7 +9,7 @@ use askama_actix::TemplateToResponse;
 
 use crate::model::todo::{AddTodo, TodoItem, UpdateTodo};
 use crate::view::todo::{TodoIndex, TodoList, TodoListItemEdit};
-
+use crate::utils::view::{ToastType, create_toast_header};
 ///
 /// Handler functions
 ///
@@ -55,14 +56,8 @@ async fn add_todo(
 ) -> impl Responder {
     // If Task is empty
     if form.task == "" {
-        let header_data = json!({
-            "AppToast": {
-                "level": "error",
-                "message": "Task cannot be empty"
-            }
-        });
         return HttpResponse::BadRequest()
-            .insert_header(("hx-trigger", header_data.to_string()))
+            .insert_header(("hx-trigger", create_toast_header(ToastType::error, "Task cannot be empty!")))
             .body("Empty task");
     }
     let add_query = sqlx::query!("INSERT INTO todo (task) VALUES ($1)", form.task);
@@ -78,7 +73,10 @@ async fn add_todo(
             completed: *completed,
         })
         .collect();
-    TodoList { todo: items }.to_response()
+    let mut response = TodoList { todo: items }.to_response();
+    let toast_header = create_toast_header(ToastType::success, "Task added!");
+    response.headers_mut().append(HeaderName::from_static("hx-trigger"), HeaderValue::from_str(&toast_header).unwrap());
+    return response;
 }
 
 //
@@ -97,15 +95,8 @@ async fn toggle_completed(id: web::Path<String>, data: web::Data<AppState>) -> i
         id_int
     );
     qry.execute(&data.pool).await.unwrap();
-    // Append header to show success message on website
-    let header_data = json!({
-        "AppToast": {
-            "level": "success",
-            "message": "Task updated successfully!"
-        }
-    });
     return HttpResponse::Accepted()
-        .append_header(("hx-trigger", header_data.to_string()))
+        .append_header(("hx-trigger", create_toast_header(ToastType::success, "Task updated successfully!")))
         .body("Ok");
 }
 
@@ -141,7 +132,9 @@ async fn update_todo(
         Err(_) => return HttpResponse::BadRequest().body("Invalid ID"),
     };
     if form.task == "" {
-        return HttpResponse::BadRequest().body("Empty task");
+        return HttpResponse::BadRequest()
+        .append_header(("hx-trigger", create_toast_header(ToastType::warning, "Task cannot be empty!")))
+        .body("Empty task");
     }
     let qry = sqlx::query!(
         "UPDATE todo SET task=($1),completed=($2) WHERE id=($3)",
@@ -161,7 +154,10 @@ async fn update_todo(
             completed: *completed,
         })
         .collect();
-    TodoList { todo: items }.to_response()
+    let mut response = TodoList { todo: items }.to_response();
+    let toast_header = create_toast_header(ToastType::success, "Task updated!");
+    response.headers_mut().append(HeaderName::from_static("hx-trigger"), HeaderValue::from_str(&toast_header).unwrap());
+    return response;
 }
 
 //
@@ -188,5 +184,9 @@ async fn delete_todo(id: web::Path<String>, data: web::Data<AppState>) -> impl R
             completed: *completed,
         })
         .collect();
-    TodoList { todo: items }.to_response()
+
+    let mut response = TodoList { todo: items }.to_response();
+    let toast_header = create_toast_header(ToastType::info, "Task deleted!");
+    response.headers_mut().append(HeaderName::from_static("hx-trigger"), HeaderValue::from_str(&toast_header).unwrap());
+    return response;
 }

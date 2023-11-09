@@ -1,6 +1,7 @@
 pub mod handler;
 pub mod model;
 pub mod view;
+pub mod utils;
 
 use actix_web::{web, App, HttpServer, middleware::Logger};
 use actix_files::Files;
