@@ -1,9 +1,9 @@
 
       <li class="bg-base-200 m-1 p-2 flex flex-row align-middle rounded-lg">
-        <form class="flex flex-row"
+        <form class="flex flex-row align-middle"
             hx-patch="/todo/{{id}}" target="#todolist"
         >
-        <span class="justify-start mr-auto flex flex-row align-middle mt-1">
+        <span class="justify-start mr-auto flex flex-row align-middle mt-1 ">
             <input type="hidden" name="id" value="{{id}}" />
             <input type="checkbox" name="completed" value="true"
                 {%if completed %}checked="checked"{% endif %} 
@@ -12,7 +12,7 @@
                 value="{{task}}" name="task" id="task_{{id}}" />
         </span>
         
-        <span class="justify-end">
+        <span class="justify-end ml-2">
           <button class="btn btn-sm btn-success" 
               >
             Save</button>

@@ -1,5 +1,6 @@
 use crate::AppState;
 use actix_web::{delete, get, patch, post, put, web, HttpResponse, Responder};
+use serde_json::json;
 use sqlx::{Pool, Postgres};
 use tracing::info;
 
@@ -27,6 +28,9 @@ async fn show_todo() -> impl Responder {
     TodoIndex {}.to_response()
 }
 
+//
+// Get all todos from DB
+//
 #[get("/todo")]
 async fn get_todo(data: web::Data<AppState>) -> impl Responder {
     let items = query_todo(data.pool.clone()).await;
@@ -41,13 +45,25 @@ async fn get_todo(data: web::Data<AppState>) -> impl Responder {
     TodoList { todo: items }.to_response()
 }
 
+//
+// Add new Todo
+//
 #[post("/todo")]
 async fn add_todo(
     data: web::Data<AppState>,
     web::Form(form): web::Form<AddTodo>,
 ) -> impl Responder {
+    // If Task is empty
     if form.task == "" {
-        return HttpResponse::BadRequest().body("Empty task");
+        let header_data = json!({
+            "AppToast": {
+                "level": "error",
+                "message": "Task cannot be empty"
+            }
+        });
+        return HttpResponse::BadRequest()
+            .insert_header(("hx-trigger", header_data.to_string()))
+            .body("Empty task");
     }
     let add_query = sqlx::query!("INSERT INTO todo (task) VALUES ($1)", form.task);
     add_query.execute(&data.pool).await.unwrap();
@@ -65,6 +81,9 @@ async fn add_todo(
     TodoList { todo: items }.to_response()
 }
 
+//
+// Toggle done/undone
+//
 #[put("/todo/{id}")]
 async fn toggle_completed(id: web::Path<String>, data: web::Data<AppState>) -> impl Responder {
     // Attempt to parse the `id` string into an i32 integer.
@@ -79,12 +98,20 @@ async fn toggle_completed(id: web::Path<String>, data: web::Data<AppState>) -> i
     );
     qry.execute(&data.pool).await.unwrap();
     // Append header to show success message on website
+    let header_data = json!({
+        "AppToast": {
+            "level": "success",
+            "message": "Task updated successfully!"
+        }
+    });
     return HttpResponse::Accepted()
-        .append_header(("hx-trigger", "taskUpdated"))
+        .append_header(("hx-trigger", header_data.to_string()))
         .body("Ok");
 }
 
+//
 // Renders the Update <li> item instead of the normal one
+//
 #[patch("/todo/edit/{id}")]
 async fn render_update_todo(
     id: web::Path<i32>,
@@ -98,7 +125,9 @@ async fn render_update_todo(
     .to_response()
 }
 
+//
 // Updates the Todolist Item
+//
 #[patch("/todo/{id}")]
 async fn update_todo(
     id: web::Path<String>,
@@ -135,6 +164,9 @@ async fn update_todo(
     TodoList { todo: items }.to_response()
 }
 
+//
+// Delete Task
+//
 #[delete("/todo/{id}")]
 async fn delete_todo(id: web::Path<String>, data: web::Data<AppState>) -> impl Responder {
     // Attempt to parse the `id` string into an i32 integer.
