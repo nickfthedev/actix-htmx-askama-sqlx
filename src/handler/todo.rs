@@ -9,9 +9,10 @@ use askama_actix::TemplateToResponse;
 
 use crate::model::todo::{AddTodo, TodoItem, UpdateTodo};
 use crate::view::todo::{TodoIndex, TodoList, TodoListItemEdit};
-use crate::utils::view::{ToastType, create_toast_header};
+use crate::utils::view::{ToastType, create_toast_header}; 
+    
 ///
-/// Handler functions
+/// Helper functions
 ///
 
 async fn query_todo(pool: Pool<Postgres>) -> Vec<(i32, String, bool)> {
@@ -23,6 +24,10 @@ async fn query_todo(pool: Pool<Postgres>) -> Vec<(i32, String, bool)> {
     .unwrap();
     return items;
 }
+
+///
+/// Handler functions
+/// 
 
 #[get("/")]
 async fn show_todo() -> impl Responder {
