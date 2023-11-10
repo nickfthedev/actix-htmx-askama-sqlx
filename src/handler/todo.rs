@@ -2,7 +2,6 @@ use crate::AppState;
 use actix_web::http::header::{HeaderName, HeaderValue};
 use actix_web::{delete, get, patch, post, put, web, HttpResponse, Responder};
 use sqlx::{Pool, Postgres};
-use tracing::info;
 
 use askama_actix::TemplateToResponse;
 
@@ -65,7 +64,7 @@ async fn add_todo(
     // If Task is empty
     if form.task == "" {
         return HttpResponse::BadRequest()
-            .insert_header(("hx-trigger", create_toast_header(ToastType::error, "Task cannot be empty!")))
+            .insert_header(("hx-trigger", create_toast_header(ToastType::Error, "Task cannot be empty!")))
             .body("Empty task");
     }
     // Query Insert
@@ -75,7 +74,7 @@ async fn add_todo(
     // Load new Data
     let items = query_todo(data.pool.clone()).await;
     let mut response = TodoList { todo: transform_todo(items)}.to_response();
-    let toast_header = create_toast_header(ToastType::success, "Task added!");
+    let toast_header = create_toast_header(ToastType::Success, "Task added!");
     response.headers_mut().append(HeaderName::from_static("hx-trigger"), HeaderValue::from_str(&toast_header).unwrap());
     return response;
 }
@@ -98,7 +97,7 @@ async fn toggle_completed(id: web::Path<String>, data: web::Data<AppState>) -> i
     qry.execute(&data.pool).await.unwrap();
     // Send Success header
     return HttpResponse::Accepted()
-        .append_header(("hx-trigger", create_toast_header(ToastType::success, "Task updated successfully!")))
+        .append_header(("hx-trigger", create_toast_header(ToastType::Success, "Task updated successfully!")))
         .body("Ok");
 }
 
@@ -136,7 +135,7 @@ async fn update_todo(
     // Error if task is empty
     if form.task == "" {
         return HttpResponse::BadRequest()
-        .append_header(("hx-trigger", create_toast_header(ToastType::warning, "Task cannot be empty!")))
+        .append_header(("hx-trigger", create_toast_header(ToastType::Warning, "Task cannot be empty!")))
         .body("Empty task");
     }
     // Query UPDATE
@@ -151,7 +150,7 @@ async fn update_todo(
     // Query new list from DB and return with success headers
     let items = query_todo(data.pool.clone()).await;
     let mut response = TodoList { todo: transform_todo(items) }.to_response();
-    let toast_header = create_toast_header(ToastType::success, "Task updated!");
+    let toast_header = create_toast_header(ToastType::Success, "Task updated!");
     response.headers_mut().append(HeaderName::from_static("hx-trigger"), HeaderValue::from_str(&toast_header).unwrap());
     return response;
 }
@@ -172,7 +171,7 @@ async fn delete_todo(id: web::Path<String>, data: web::Data<AppState>) -> impl R
     // Query new todolist from DB
     let items = query_todo(data.pool.clone()).await;
     let mut response = TodoList { todo: transform_todo(items) }.to_response();
-    let toast_header = create_toast_header(ToastType::info, "Task deleted!");
+    let toast_header = create_toast_header(ToastType::Info, "Task deleted!");
     response.headers_mut().append(HeaderName::from_static("hx-trigger"), HeaderValue::from_str(&toast_header).unwrap());
     return response;
 }
