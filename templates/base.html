@@ -52,16 +52,16 @@
         let toastElementMessage = document.getElementById("AppToastMessage");
         toastElementMessage.innerHTML = msg;
         switch (evt.detail.level) {
-          case "info":
+          case "Info":
             toastElementContent.classList.add("alert-info");
             break;
-          case "warning":
+          case "Warning":
             toastElementContent.classList.add("alert-warning");
             break;
-          case "error":
+          case "Error":
             toastElementContent.classList.add("alert-error");
             break;
-          case "success":
+          case "Success":
             toastElementContent.classList.add("alert-success");
             break;
         }
