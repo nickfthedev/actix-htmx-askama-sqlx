@@ -5,9 +5,9 @@ use serde::Deserialize;
 /// Structs
 ///
 
-pub struct TodoItem<'a> {
-    pub id: &'a i32,
-    pub task: &'a str,
+pub struct TodoItem {
+    pub id: i32,
+    pub task: String,
     pub completed: bool,
 }
 

@@ -13,9 +13,9 @@ pub struct TodoIndex {}
 #[allow(dead_code)]
 #[derive(Template)]
 #[template(path = "todo_list.html")]
-pub struct TodoList<'a> {
+pub struct TodoList {
     #[template(escape = "none")]
-    pub todo: Vec<TodoItem<'a>>,
+    pub todo: Vec<TodoItem>,
 }
 
 #[allow(dead_code)]
