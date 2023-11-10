@@ -41,47 +41,9 @@
         </aside>
       </footer>
     </div>
-
     <!-- AppToast hx-trigger event listener for toasts -->
-    <script>
-      document.body.addEventListener("AppToast", function (evt) {
-        console.log("TRIGGERED");
-        let msg = evt.detail.message;
-        let toastElement = document.getElementById("AppToast");
-        let toastElementContent = document.getElementById("AppToastContent");
-        let toastElementMessage = document.getElementById("AppToastMessage");
-        toastElementMessage.innerHTML = msg;
-        switch (evt.detail.level) {
-          case "Info":
-            toastElementContent.classList.add("alert-info");
-            break;
-          case "Warning":
-            toastElementContent.classList.add("alert-warning");
-            break;
-          case "Error":
-            toastElementContent.classList.add("alert-error");
-            break;
-          case "Success":
-            toastElementContent.classList.add("alert-success");
-            break;
-        }
-        toastElement.classList.remove("invisible");
-        setTimeout(function () {
-          toastElement.classList.add("invisible");
-          toastElementContent.classList.remove(
-            "alert-info",
-            "alert-warning",
-            "alert-error",
-            "alert-success"
-          );
-        }, 2000); // 2000 milliseconds (2 seconds)
-      });
-    </script>
+    <script src="public/toast.js"></script>
     <!-- toasts -->
-    <div id="AppToast" class="toast toast-top toast-center invisible">
-      <div class="alert alert-info" id="AppToastContent">
-        <span id="AppToastMessage">Task updated.</span>
-      </div>
-    </div>
+    <div id="AppToast" class="toast toast-top toast-center "></div>
   </body>
 </html>
