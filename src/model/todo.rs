@@ -1,6 +1,4 @@
-
 use serde::Deserialize;
-
 //
 /// Structs
 ///
@@ -17,13 +15,12 @@ pub struct AddTodo {
     pub task: String,
 }
 
-
 #[allow(dead_code)]
 #[derive(Deserialize)]
 pub struct UpdateTodo {
     pub id: i32,
     pub task: String,
-    pub completed: Option<bool>, 
+    pub completed: Option<bool>,
 }
 
 impl UpdateTodo {
