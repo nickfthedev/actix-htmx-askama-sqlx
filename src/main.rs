@@ -16,7 +16,7 @@ use handler::health;
 use handler::todo::{
     add_todo, delete_todo, get_todo, render_update_todo, show_todo, toggle_completed, update_todo,
 };
-use handler::user::add_user;
+use handler::user::{add_user, show_register};
 
 #[derive(Clone)]
 struct AppState {
@@ -70,6 +70,7 @@ async fn main() -> std::io::Result<()> {
             .service(toggle_completed)
             // User handler
             .service(add_user)
+            .service(show_register)
             // 404 handler
             .default_service(
                 // Custom 404

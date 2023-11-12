@@ -24,7 +24,13 @@
     <div class="flex flex-col h-screen justify-between">
       <header class="">
         <div class="navbar bg-base-200">
-          <a class="btn btn-ghost normal-case text-xl">Todo App</a>
+          <div class="navbar-start">
+
+        <a class="btn btn-ghost normal-case text-xl">Todo App</a>
+          </div>
+          <div class="navbar-end">
+            <a class="btn" href="/register">Register</a>
+          </div>
         </div>
       </header>
       <main class="mb-auto flex justify-center mt-4 mx-2">
@@ -44,6 +50,22 @@
     <!-- AppToast hx-trigger event listener for toasts -->
     <script src="public/toast.js"></script>
     <!-- toasts -->
-    <div id="AppToast" class="toast toast-top toast-center "></div>
+    <div id="AppToast" class="toast toast-top toast-center ">
+    </div>
+    <div id="AppToastForStyle" class="toast toast-top toast-center invisible">
+      <!-- Don't remove because Tailwind otherwise will not show the styles -->
+      <div class="alert alert-info invisible">
+        <span>New message arrived.</span>
+      </div>
+      <div class="alert alert-error invisible">
+        <span>New message arrived.</span>
+      </div>
+      <div class="alert alert-warning invisible">
+        <span>New message arrived.</span>
+      </div>
+      <div class="alert alert-success invisible">
+        <span>New message arrived.</span>
+      </div>
+    </div>
   </body>
 </html>

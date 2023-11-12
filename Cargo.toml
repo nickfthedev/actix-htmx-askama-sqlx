@@ -17,3 +17,5 @@ askama = "0.12.1"
 askama_actix = "0.14.0"
 actix-files = "0.6.2"
 uuid = {version = "1.5.0", features = ["serde"]}
+bcrypt = "0.15.0"
+rand = "0.8.5"
